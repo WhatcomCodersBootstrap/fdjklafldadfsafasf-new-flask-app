@@ -1,0 +1,30 @@
+name: Setup Application Configuration
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  setup-config:
+    runs-on: ubuntu-latest
+    if: github.repository != 'WhatcomCodersDev/bootstrap_python_example'
+
+    permissions:
+      contents: write
+      actions: read
+      pull-requests: write # Optional based on your needs
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set Service Name
+        run: |
+          REPO_NAME="${GITHUB_REPOSITORY##*/}"
+          SERVICE_NAME="${REPO_NAME,,}"  # Convert to lowercase if necessary
+          sed -i "s/PLACEHOLDER_SERVICE_NAME/$SERVICE_NAME/g" app.yaml
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add app.yaml
+          git commit -m "Update service name to $SERVICE_NAME" || echo "No changes to commit"
+          git push origin main
